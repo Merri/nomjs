@@ -15,9 +15,8 @@ function updateProps(obj, props) {
     if (obj == null) return obj
     // see if it is a DOM element without a render method
     if (obj instanceof Node && !obj.render) {
-        obj.render = function () {
-        // see if we need to render self
-            render(obj, originalProps)
+        obj.render = function() {
+            updateProps(obj, originalProps)
             // call render of all the children
             let child = obj.firstChild
             while (child) {
