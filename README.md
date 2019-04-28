@@ -30,7 +30,7 @@ const colors = ['blue', 'red', 'gray', 'orange']
 // this short example does evil mutation of `color` variable
 function Component({ color }) {
     return (
-        <div style={() => ({ backgroundColor: color })}>
+        <div style={() => ({ backgroundColor: color, padding: '6px' })}>
             <p>Hello World!</p>
             <button onclick={() => color = colors[(colors.indexOf(color) + 1) % colors.length]}>
                 Change color
