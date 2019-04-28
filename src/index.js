@@ -34,7 +34,7 @@ function updateProps(obj, props) {
     // apply each property
     for (let prop in props) {
         if (!props.hasOwnProperty(prop)) continue
-        const objProp = htmlToJs[prop] || prop
+        const objProp = htmlToDom[prop] || prop
         let value = (
             prop !== 'children' && prop.slice(0, 2) !== 'on' && isFunction(props[prop])
                 ? props[prop].call(obj, obj[objProp])
