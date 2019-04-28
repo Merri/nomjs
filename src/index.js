@@ -1,10 +1,4 @@
-const nodeForText = document.createElement('div')
-const textProp = 'textContent' in nodeForText ? 'textContent' : 'innerText'
-
-const htmlToJs = {
-    class: 'className',
-    for: 'htmlFor'
-}
+import htmlToDom from './htmlToDom.json'
 
 // typeof is fastest way to check if a function but older IEs don't support it for that and Chrome had a bug
 const isFunction = (
@@ -92,20 +86,20 @@ function updateProps(obj, props) {
             // remove the nodes that are no longer with us
             while (nodesToRemove.length) { obj.removeChild(nodesToRemove.pop()) }
             // create a fragment to host multiple nodes, otherwise use the parent node
-            const fra = (nodes.length - nodeIndex > 0) ? document.createDocumentFragment() : obj
+            const parent = (nodes.length - nodeIndex > 0) ? document.createDocumentFragment() : obj
             // add nodes that are missing
             while (nodes.length >= nodeIndex) {
                 // add text node
-                if (typeof node === 'string') fra.appendChild(document.createTextNode(node))
+                if (typeof node === 'string') parent.appendChild(document.createTextNode(node))
                 // add DOM element
-                else if (node instanceof Node) fra.appendChild(node)
+                else if (node instanceof Node) parent.appendChild(node)
                 // add anything else even if supporting this may be a bit dangerous
-                else fra.appendChild(fragment(node))
+                else parent.appendChild(fragment(node))
 
                 node = nodes[nodeIndex++]
             }
             // see if there is a fragment to be added to the main node object
-            if (fra !== obj && fra.childNodes.length) obj.appendChild(fra)
+            if (parent !== obj && parent.childNodes.length) obj.appendChild(parent)
             // skip functions
         } else if (isFunction(obj[objProp]));
         // apply subproperties like style if value is an object
@@ -162,16 +156,11 @@ export function fragment(...nodes) {
     // nodes isn't really containing nodes yet, but we make them be ones
     while (nodes.length > nodeIndex) {
         const node = nodes[nodeIndex++]
-        // nodes are easy to add in right away
+
         if (node instanceof Node) {
             frag.appendChild(node)
-            // strings
         } else if (typeof node === 'string') {
-            // let a div do the hard work
-            nodeForText[textProp] = node
-            // capture the children to our fragment
-            while (nodeForText.firstChild) frag.appendChild(nodeForText.firstChild)
-            // recursive call for arrays
+            frag.appendChild(document.createTextNode(node))
         } else if (Array.isArray(node)) {
             frag.appendChild(fragment.apply(this, node))
         }
