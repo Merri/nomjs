@@ -50,3 +50,5 @@ document.body.appendChild(
 npm install --save @merri/nomjs
 yarn add @merri/nomjs
 ```
+
+Please note this lib is still in alpha so there will probably be large changes to how things work.
