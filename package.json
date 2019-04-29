@@ -1,7 +1,7 @@
 {
   "name": "@merri/nomjs",
   "description": "DOM is clumsy. Nom makes it easy.",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "license": "MIT",
   "author": "Vesa Piittinen <vesa.piittinen@gmail.com>",
   "bugs": {
@@ -32,6 +32,10 @@
     "prettier": "^1.8.2",
     "raf": "^3.4.0",
     "rimraf": "^2.6.1",
+    "rollup": "^1.10.1",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-uglify": "^6.0.2",
     "standard-version": "^4.2.0",
     "validate-commit-msg": "^2.14.0"
   },
@@ -61,9 +65,10 @@
     "url": "https://github.com/merri/nomjs.git"
   },
   "scripts": {
-    "build": "yarn build:js && yarn build:es",
+    "build": "yarn build:js && yarn build:es && yarn build:umd",
     "build:js": "cross-env BABEL_ENV=production BABEL_OUTPUT=cjs babel src --out-dir lib/js --ignore __tests__ --copy-files",
     "build:es": "cross-env BABEL_ENV=production BABEL_OUTPUT=esm babel src --out-dir lib/es --ignore __tests__ --copy-files",
+    "build:umd": "cross-env BABEL_ENV=production rollup -c",
     "clear": "rimraf ./lib",
     "commitmsg": "validate-commit-msg",
     "coverage": "yarn test -- --coverage",
