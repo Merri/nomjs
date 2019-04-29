@@ -43,3 +43,10 @@ document.body.appendChild(
     mount(<Component color="black" />)
 )
 ```
+
+## Get it
+
+```
+npm install --save @merri/nomjs
+yarn add @merri/nomjs
+```
