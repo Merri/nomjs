@@ -1,6 +1,9 @@
 <img alt="NomJS" src="http://merri.net/github-nomjs_720x225.png" height="225" width="720" />
 
-Nom.js is a DOM library that supports React JSX syntax.
+[![Version](http://img.shields.io/npm/v/@merri/nomjs.svg)](https://www.npmjs.com/package/@merri/nomjs)
+[![Build Status](https://travis-ci.org/Merri/nomjs.svg)](https://travis-ci.org/Merri/nomjs)
+
+Nom.js is a DOM library that works with JSX syntax (not compatible with React components).
 
 ## Project targets:
 
