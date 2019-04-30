@@ -52,7 +52,13 @@ function updateProps(obj, props) {
             while (existingNode) {
                 // do we need to figure out a new node or string to work with?
                 if (node === true) {
-                    while ((node = nodes[nodeIndex++]) && !(typeof node === 'string' || node instanceof Node));
+                    while ((node = nodes[nodeIndex++]) && !(isFunction(node) || typeof node === 'string' || node instanceof Node));
+                }
+                if (isFunction(node)) {
+                    node = node.call(obj)
+                    if (!(typeof node === 'string' || node instanceof Node)) {
+                        node = fragment(node)
+                    }
                 }
                 // see if a string needs to be updated or added
                 if (typeof node === 'string') {
@@ -80,7 +86,9 @@ function updateProps(obj, props) {
                         node = true
                     }
                     // ignore this element, it does not interest us
-                } else { existingNode = existingNode.nextSibling }
+                } else {
+                    existingNode = existingNode.nextSibling
+                }
             }
             // remove the nodes that are no longer with us
             while (nodesToRemove.length) { obj.removeChild(nodesToRemove.pop()) }
@@ -88,11 +96,9 @@ function updateProps(obj, props) {
             const parent = (nodes.length - nodeIndex > 0) ? document.createDocumentFragment() : obj
             // add nodes that are missing
             while (nodes.length >= nodeIndex) {
-                // add text node
+                if (isFunction(node)) node = node.call(obj)
                 if (typeof node === 'string') parent.appendChild(document.createTextNode(node))
-                // add DOM element
                 else if (node instanceof Node) parent.appendChild(node)
-                // add anything else even if supporting this may be a bit dangerous
                 else parent.appendChild(fragment(node))
 
                 node = nodes[nodeIndex++]
@@ -105,7 +111,9 @@ function updateProps(obj, props) {
         else if (typeof value === 'object') {
             if (obj[objProp] != null) {
                 for (let item in value) {
-                    if (value.hasOwnProperty(item) && obj[objProp][item] !== value[item]) { obj[objProp][item] = value[item] }
+                    if (value.hasOwnProperty(item) && obj[objProp][item] !== value[item]) {
+                        obj[objProp][item] = value[item]
+                    }
                 }
             }
         }
@@ -152,10 +160,12 @@ export function h(element, props, ...childs) {
 export function fragment(...nodes) {
     const frag = document.createDocumentFragment()
     let nodeIndex = 0
+    // flatten
+    nodes = Array.prototype.concat.apply([], nodes)
     // nodes isn't really containing nodes yet, but we make them be ones
     while (nodes.length > nodeIndex) {
         const node = nodes[nodeIndex++]
-
+        if (isFunction(node)) node = node.call(frag)
         if (node instanceof Node) {
             frag.appendChild(node)
         } else if (typeof node === 'string') {
