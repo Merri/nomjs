@@ -89,10 +89,13 @@ function updateProps(obj, props) {
                             continue
                         }
                     }
-                    // convert array to fragment
-                    if (Array.isArray(node)) node = fragment(...node)
-                    // diffing forces us to add fragment's children to our nodes list manually
-                    if (node instanceof Node && node.nodeType === 11) {
+                    if (Array.isArray(node)) {
+                        nodes.splice(nodeIndex, 0, ...node)
+                        // request next node/string
+                        node = true
+                        continue
+                    } else if (node instanceof Node && node.nodeType === 11) {
+                        // diffing forces us to add fragment's children to our nodes list manually
                         node.normalize()
                         if (ref != null) {
                             let childNode = node.firstChild
