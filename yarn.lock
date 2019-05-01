@@ -1763,7 +1763,7 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^2.11.0, commander@^2.8.1, commander@^2.9.0, commander@~2.20.0:
+commander@^2.11.0, commander@^2.19.0, commander@^2.8.1, commander@^2.9.0, commander@~2.20.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
@@ -5643,20 +5643,22 @@ rimraf@2.6.3, rimraf@^2.6.1:
   dependencies:
     glob "^7.1.3"
 
-rollup-plugin-babel@^4.3.2:
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-babel/-/rollup-plugin-babel-4.3.2.tgz#8c0e1bd7aa9826e90769cf76895007098ffd1413"
-  integrity sha512-KfnizE258L/4enADKX61ozfwGHoqYauvoofghFJBhFnpH9Sb9dNPpWg8QHOaAfVASUYV8w0mCx430i9z0LJoJg==
-  dependencies:
-    "@babel/helper-module-imports" "^7.0.0"
-    rollup-pluginutils "^2.3.0"
-
 rollup-plugin-json@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/rollup-plugin-json/-/rollup-plugin-json-4.0.0.tgz#a18da0a4b30bf5ca1ee76ddb1422afbb84ae2b9e"
   integrity sha512-hgb8N7Cgfw5SZAkb3jf0QXii6QX/FOkiIq2M7BAQIEydjHvTyxXHQiIzZaTFgx1GK0cRCHOCBHIyEkkLdWKxow==
   dependencies:
     rollup-pluginutils "^2.5.0"
+
+rollup-plugin-terser@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-terser/-/rollup-plugin-terser-4.0.4.tgz#6f661ef284fa7c27963d242601691dc3d23f994e"
+  integrity sha512-wPANT5XKVJJ8RDUN0+wIr7UPd0lIXBo4UdJ59VmlPCtlFsE20AM+14pe+tk7YunCsWEiuzkDBY3QIkSCjtrPXg==
+  dependencies:
+    "@babel/code-frame" "^7.0.0"
+    jest-worker "^24.0.0"
+    serialize-javascript "^1.6.1"
+    terser "^3.14.1"
 
 rollup-plugin-uglify@^6.0.2:
   version "6.0.2"
@@ -5668,7 +5670,7 @@ rollup-plugin-uglify@^6.0.2:
     serialize-javascript "^1.6.1"
     uglify-js "^3.4.9"
 
-rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.5.0:
+rollup-pluginutils@^2.5.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.6.0.tgz#203706edd43dfafeaebc355d7351119402fc83ad"
   integrity sha512-aGQwspEF8oPKvg37u3p7h0cYNwmJR1sCBMZGZ5b9qy8HGtETknqjzcxrDRrcAnJNXN18lBH4Q9vZYth/p4n8jQ==
@@ -5907,6 +5909,14 @@ source-map-support@^0.4.15:
   integrity sha512-try0/JqxPLF9nOjvSta7tVondkP5dwgyLDjVoyMDlmjugT2lRZ1OfsrYTkCd2hkDnJTKRbO/Rl3orm8vlsUzbA==
   dependencies:
     source-map "^0.5.6"
+
+source-map-support@~0.5.10:
+  version "0.5.12"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.12.tgz#b4f3b10d51857a5af0138d3ce8003b201613d599"
+  integrity sha512-4h2Pbvyy15EE02G+JOZpUCmqWJuqrs+sEkzewTm++BPi7Hvn/HwcqLAcNxYAyI0x13CpPPn+kMjl+hplXMHITQ==
+  dependencies:
+    buffer-from "^1.0.0"
+    source-map "^0.6.0"
 
 source-map-url@^0.4.0:
   version "0.4.0"
@@ -6214,6 +6224,15 @@ tar@^4:
     mkdirp "^0.5.0"
     safe-buffer "^5.1.2"
     yallist "^3.0.2"
+
+terser@^3.14.1:
+  version "3.17.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-3.17.0.tgz#f88ffbeda0deb5637f9d24b0da66f4e15ab10cb2"
+  integrity sha512-/FQzzPJmCpjAH9Xvk2paiWrFq+5M6aVOf+2KRbwhByISDX/EujxsK+BAvrhb6H+2rtrLCHK9N01wO014vrIwVQ==
+  dependencies:
+    commander "^2.19.0"
+    source-map "~0.6.1"
+    source-map-support "~0.5.10"
 
 test-exclude@^4.2.1:
   version "4.2.3"
