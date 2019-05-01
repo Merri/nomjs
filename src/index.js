@@ -7,6 +7,14 @@ const isFunction = (
         : func => Object.prototype.toString.call(func) === '[object Function]'
 )
 
+function addNode(parent, node) {
+    if (isFunction(node)) node = node.call(parent)
+    if (node instanceof Node) parent.appendChild(node)
+    else if (typeof node === 'string') parent.appendChild(document.createTextNode(node))
+    else if (Array.isArray(node)) parent.appendChild(fragment(node))
+    else if (node != null && node !== false && node !== true) parent.appendChild(document.createTextNode(String(node)))
+}
+
 // applies properties to object or DOM node, adds render method to elements and returns the object
 function updateProps(obj, props) {
     const originalProps = props
@@ -52,41 +60,62 @@ function updateProps(obj, props) {
             while (existingNode) {
                 // do we need to figure out a new node or string to work with?
                 if (node === true) {
-                    while ((node = nodes[nodeIndex++]) && !(isFunction(node) || typeof node === 'string' || node instanceof Node));
+                    if (nodeIndex < nodes.length) while (
+                        (node = nodes[nodeIndex++]) &&
+                        nodeIndex < nodes.length &&
+                        (node == null || node === true || node === false)
+                    );
+                    else node = null
                 }
-                if (isFunction(node)) {
-                    node = node.call(obj)
-                    if (!(typeof node === 'string' || node instanceof Node)) {
-                        node = fragment(node)
+                if (node != null) {
+                    if (isFunction(node)) {
+                        node = node.call(obj)
+                        // undefined and null are ignored
+                        if (node == null || node === true || node === false) {
+                            // request next node/string
+                            node = true
+                            continue
+                        }
+                    }
+                    // convert array to fragment
+                    if (Array.isArray(node)) node = fragment(...node)
+                    // diffing forces us to add fragment's children to our nodes list manually
+                    if (node instanceof Node && node.nodeType === 11) {
+                        nodes.splice(nodeIndex, 0, ...node.childNodes)
+                        // request next node/string
+                        node = true
+                        continue
+                    } else if (!(node instanceof Node || typeof node === 'string')) {
+                        node = String(node)
+                    }
+                    // see if a string needs to be updated or added
+                    if (typeof node === 'string') {
+                        if (existingNode.nodeType === 3) {
+                            if (existingNode.nodeValue !== node) existingNode.nodeValue = node
+                            existingNode = existingNode.nextSibling
+                        } else {
+                            obj.insertBefore(document.createTextNode(node), existingNode)
+                        }
+                        // request next node/string
+                        node = true
+                        continue
                     }
                 }
-                // see if a string needs to be updated or added
-                if (typeof node === 'string') {
-                    // text nodes are simply replaced with new content
-                    if (existingNode.nodeType === 3) {
-                        if (existingNode.nodeValue !== node) existingNode.nodeValue = node
-                        existingNode = existingNode.nextSibling
-                        // add a text node here as that is the best assumption we can make
-                    } else { obj.insertBefore(document.createTextNode(node), existingNode) }
-                    // request next node/string
-                    node = true
-                    // see if this is a Nom extended node
-                } else if (isFunction(existingNode.render)) {
-                    // have we ran out of nodes?
-                    if (!node) {
-                        // abandon ship!
+                // controlled by NomJS?
+                if (isFunction(existingNode.render)) {
+                    if (node == null) {
                         nodesToRemove.push(existingNode)
                         existingNode = existingNode.nextSibling
                     } else {
                         // order has changed so move another node here
-                        if (existingNode !== node) { obj.insertBefore(node, existingNode) }
+                        if (existingNode !== node) obj.insertBefore(node, existingNode)
                         // in any other case we can just go ahead and compare the next node
-                        else { existingNode = existingNode.nextSibling }
+                        else existingNode = existingNode.nextSibling
                         // request next node/string
                         node = true
                     }
-                    // ignore this element, it does not interest us
                 } else {
+                    // ignore this element, it does not interest us
                     existingNode = existingNode.nextSibling
                 }
             }
@@ -96,11 +125,7 @@ function updateProps(obj, props) {
             const parent = (nodes.length - nodeIndex > 0) ? document.createDocumentFragment() : obj
             // add nodes that are missing
             while (nodes.length >= nodeIndex) {
-                if (isFunction(node)) node = node.call(obj)
-                if (typeof node === 'string') parent.appendChild(document.createTextNode(node))
-                else if (node instanceof Node) parent.appendChild(node)
-                else parent.appendChild(fragment(node))
-
+                addNode(parent, node)
                 node = nodes[nodeIndex++]
             }
             // see if there is a fragment to be added to the main node object
@@ -158,23 +183,20 @@ export function h(element, props, ...childs) {
 }
 
 export function fragment(...nodes) {
-    const frag = document.createDocumentFragment()
+    const frag = this instanceof Node ? this : document.createDocumentFragment()
     let nodeIndex = 0
     // flatten
     nodes = Array.prototype.concat.apply([], nodes)
     // nodes isn't really containing nodes yet, but we make them be ones
     while (nodes.length > nodeIndex) {
         const node = nodes[nodeIndex++]
-        if (isFunction(node)) node = node.call(frag)
-        if (node instanceof Node) {
-            frag.appendChild(node)
-        } else if (typeof node === 'string') {
-            frag.appendChild(document.createTextNode(node))
-        } else if (Array.isArray(node)) {
-            frag.appendChild(fragment.apply(this, node))
-        }
+        addNode(frag, node)
     }
     return frag
+}
+
+export function Fragment(props) {
+    return fragment(...props.children)
 }
 
 // takes a fragment or nodes, mounts them for automatic render, returns a fragment with unmount method
@@ -183,7 +205,7 @@ export function mount(frag) {
     const originalNodes = []
     let nodeIndex = 0
     // make sure we work with a fragment; support skipping a call to fragment()
-    if (!(frag instanceof Node && frag.nodeType === 11)) frag = fragment.apply(this, arguments)
+    if (!(frag instanceof Node && frag.nodeType === 11)) frag = fragment.apply(null, arguments)
     // get to know our original children
     while (frag.childNodes.length > nodeIndex) {
         const node = frag.childNodes[nodeIndex++]
