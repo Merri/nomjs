@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-alpha.5] - 2019-05-01
+
+### Changed
+
+- Use Terser for the main UMD bundle (ES5)
+- Unify initial creation of DOM elements and DOM diffing behavior
+
+### Added
+
+- Alternate ES5 UMD with UglifyJS
+- ES6 UMD with Terser
+- Manage `null`, `true` and `false` when diffing DOM
+- Manage fragments when diffing DOM
+- Coerce remaining non-strings and non-Nodes to strings when diffing DOM
+
+
 ## [1.0.0-alpha.4] - 2019-05-01
 
 ### Added
