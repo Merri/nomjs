@@ -281,44 +281,29 @@ export function mount(frag) {
 }
 
 export function memoMap(result, create) {
-    let roundOne = 2
-    const results = result()
-    const items = !Array.isArray(results) ? [results] : results
-    const cache = items.reduce(
-        (cache, item) => {
-            if (cache.has(item)) {
-                cache.get(item).push(create(item))
-            } else {
-                cache.set(item, [create(item)])
-            }
-            return cache
-        },
-        new Map()
-    )
+    const cache = new Map()
     return () => {
-        let cacheMiss = false
         const results = result()
         const items = !Array.isArray(results) ? [results] : results
         const indexCache = new Map()
+        Array.from(cache.keys()).forEach(key => {
+            if (!items.includes(key)) {
+                cache.delete(key)
+            }
+        })
         const memo = items.reduce(
             (memo, item) => {
                 const index = ~~indexCache.get(item)
                 if (cache.has(item)) {
-                    if (roundOne) console.log('cache hit!', item)
                     const nodes = cache.get(item)
                     if (index < nodes.length) {
-                        if (roundOne) console.log('cache found!', nodes[index])
                         memo.push(nodes[index])
                     } else {
-                        cacheMiss = true
-                        if (roundOne) console.log('array miss!')
                         const node = create(item)
                         nodes.push(node)
                         memo.push(node)
                     }
                 } else {
-                    cacheMiss = true
-                    if (roundOne) console.log('cache miss!')
                     const node = create(item)
                     cache.set(item, [node])
                     memo.push(node)
@@ -329,15 +314,6 @@ export function memoMap(result, create) {
             []
         )
         indexCache.clear()
-        Array.from(cache.keys()).forEach(key => {
-            if (!items.includes(key)) {
-                cacheMiss = true
-                if (roundOne) console.log('removed key', key)
-                cache.delete(key)
-            }
-        })
-        if (cacheMiss) roundOne = 2
-        else if (roundOne > 0) roundOne--
         return memo
     }
 }
