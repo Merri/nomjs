@@ -52,7 +52,16 @@ function updateProps(obj, props) {
         if (prop === 'children' && obj.childNodes) {
             let node = true
             let nodeIndex = 0
-            if (typeof value === 'function') value = value.call(obj)
+            let ref
+            if (typeof value === 'function') {
+                ref = value
+                value = value.call(obj)
+                if (value == null || value === true || value === false) {
+                    while (obj.firstChild) {
+                        obj.removeChild(obj.firstChild)
+                    }
+                }
+            }
             // shallow flatten to a one dimensional array, eg. [[a], [b, [c]]] -> [a, b, [c]]
             const nodes = Array.isArray(value) ? Array.prototype.concat.apply([], value) : [value]
             // the following will reorganize nodes and update text nodes in order
@@ -68,10 +77,13 @@ function updateProps(obj, props) {
                     else node = null
                 }
                 if (node != null) {
+                    ref = node.$ref || null
                     if (isFunction(node)) {
+                        ref = node
                         node = node.call(obj)
                         // undefined and null are ignored
                         if (node == null || node === true || node === false) {
+                            ref = null
                             // request next node/string
                             node = true
                             continue
@@ -81,6 +93,14 @@ function updateProps(obj, props) {
                     if (Array.isArray(node)) node = fragment(...node)
                     // diffing forces us to add fragment's children to our nodes list manually
                     if (node instanceof Node && node.nodeType === 11) {
+                        node.normalize()
+                        if (ref != null) {
+                            let childNode = node.firstChild
+                            while (childNode) {
+                                childNode.$ref = ref
+                                childNode = childNode.nextSibling
+                            }
+                        }
                         nodes.splice(nodeIndex, 0, ...Array.prototype.slice.call(node.childNodes, 0))
                         // request next node/string
                         node = true
@@ -93,16 +113,31 @@ function updateProps(obj, props) {
                         if (existingNode.nodeType === 3) {
                             if (existingNode.nodeValue !== node) existingNode.nodeValue = node
                             existingNode = existingNode.nextSibling
-                        } else {
+                        } else if (existingNode.$ref !== ref) {
                             obj.insertBefore(document.createTextNode(node), existingNode)
+                        } else {
+                            obj.replaceChild(document.createTextNode(node), existingNode)
                         }
                         // request next node/string
                         node = true
                         continue
                     }
                 }
-                // controlled by NomJS?
-                if (isFunction(existingNode.render)) {
+                if (existingNode.$ref === ref) {
+                    // created by same function
+                    if (node == null) {
+                        nodesToRemove.push(existingNode)
+                        existingNode = existingNode.nextSibling
+                    } else {
+                        // order has changed so move another node here
+                        if (existingNode !== node) obj.insertBefore(node, existingNode)
+                        // in any other case we can just go ahead and compare the next node
+                        else existingNode = existingNode.nextSibling
+                        // request next node/string
+                        node = true
+                    }
+                } else if (isFunction(existingNode.render)) {
+                    // controlled by NomJS
                     if (node == null) {
                         nodesToRemove.push(existingNode)
                         existingNode = existingNode.nextSibling
@@ -240,4 +275,66 @@ export function mount(frag) {
     // initial render call
     requestAnimationFrame(render)
     return frag
+}
+
+export function memoMap(result, create) {
+    let roundOne = 2
+    const results = result()
+    const items = !Array.isArray(results) ? [results] : results
+    const cache = items.reduce(
+        (cache, item) => {
+            if (cache.has(item)) {
+                cache.get(item).push(create(item))
+            } else {
+                cache.set(item, [create(item)])
+            }
+            return cache
+        },
+        new Map()
+    )
+    return () => {
+        let cacheMiss = false
+        const results = result()
+        const items = !Array.isArray(results) ? [results] : results
+        const indexCache = new Map()
+        const memo = items.reduce(
+            (memo, item) => {
+                const index = ~~indexCache.get(item)
+                if (cache.has(item)) {
+                    if (roundOne) console.log('cache hit!', item)
+                    const nodes = cache.get(item)
+                    if (index < nodes.length) {
+                        if (roundOne) console.log('cache found!', nodes[index])
+                        memo.push(nodes[index])
+                    } else {
+                        cacheMiss = true
+                        if (roundOne) console.log('array miss!')
+                        const node = create(item)
+                        nodes.push(node)
+                        memo.push(node)
+                    }
+                } else {
+                    cacheMiss = true
+                    if (roundOne) console.log('cache miss!')
+                    const node = create(item)
+                    cache.set(item, [node])
+                    memo.push(node)
+                }
+                indexCache.set(item, index + 1)
+                return memo
+            },
+            []
+        )
+        indexCache.clear()
+        Array.from(cache.keys()).forEach(key => {
+            if (!items.includes(key)) {
+                cacheMiss = true
+                if (roundOne) console.log('removed key', key)
+                cache.delete(key)
+            }
+        })
+        if (cacheMiss) roundOne = 2
+        else if (roundOne > 0) roundOne--
+        return memo
+    }
 }
