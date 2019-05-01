@@ -81,7 +81,7 @@ function updateProps(obj, props) {
                     if (Array.isArray(node)) node = fragment(...node)
                     // diffing forces us to add fragment's children to our nodes list manually
                     if (node instanceof Node && node.nodeType === 11) {
-                        nodes.splice(nodeIndex, 0, ...node.childNodes)
+                        nodes.splice(nodeIndex, 0, ...Array.prototype.slice.call(node.childNodes, 0))
                         // request next node/string
                         node = true
                         continue
