@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-alpha.10] - 2019-05-02
+
+### Fixed
+
+- Static children generation now matches with dynamic children generation
+
+### Removed
+
+- `props` can no longer be given as an array nor as a function
+- CSS class and ID can no longer be given as part of string element name
+
+
 ## [1.0.0-alpha.9] - 2019-05-01
 
 ### Changed
