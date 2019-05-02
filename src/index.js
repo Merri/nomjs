@@ -213,19 +213,7 @@ export function h(element, props, ...childs) {
     if (isFunction(element)) {
         element = element(props)
     } else if (typeof element === 'string') {
-        const cssishParts = element.match(/([#.]?[^#.]+)/g)
-        let index = 0
-        element = document.createElement(cssishParts[0])
-        while (++index < cssishParts.length) {
-            switch (cssishParts[index].charCodeAt(0)) {
-                case 0x23: // #
-                    element.id = cssishParts[index].slice(1)
-                    break
-                case 0x2E: // .
-                    element.className = cssishParts[index].slice(1)
-                    break
-            }
-        }
+        element = document.createElement(element)
     }
     // assign new properties and add Nom's rendering capabilities to the element
     return updateProps(element, props)
