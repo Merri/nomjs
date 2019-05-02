@@ -17,28 +17,23 @@ function addNode(parent, node) {
 
 // applies properties to object or DOM node, adds render method to elements and returns the object
 function updateProps(obj, props) {
-    const originalProps = props
-    const nodesToRemove = []
     // we need to have an object of some sort
     if (obj == null) return obj
     // see if it is a DOM element without a render method
-    if (obj instanceof Node && !obj.render) {
-        obj.render = function() {
-            updateProps(obj, originalProps)
-            // call render of all the children
-            let child = obj.firstChild
-            while (child) {
-                if (isFunction(child.render)) requestAnimationFrame(child.render)
-                child = child.nextSibling
+    if (obj instanceof Node && obj.nodeType !== 11 && !obj.render) {
+        Object.defineProperty(obj, 'render', {
+            value: function() {
+                updateProps(obj, props)
+                // call render of all the children
+                let child = obj.firstChild
+                while (child) {
+                    if (isFunction(child.render)) child.render()
+                    child = child.nextSibling
+                }
             }
-        }
+        })
     }
-    // if it is a function then assume it returns properties
-    if (isFunction(props)) props = props.call(obj)
-    // should be an object now
-    if (typeof props !== 'object') return obj
-    // array is expected to contain child nodes
-    if (Array.isArray(props)) props = { children: props }
+    const nodesToRemove = []
     // apply each property
     for (let prop in props) {
         if (!props.hasOwnProperty(prop)) continue
@@ -189,16 +184,32 @@ function updateProps(obj, props) {
     return obj
 }
 
-export function h(element, props, ...childs) {
-    const children = childs.map(child => (
-        child == null || typeof child === 'string' || child instanceof Node || isFunction(child) ? child : String(child)
-    ))
-    // props must be object or a function
-    if (props == null || (typeof props !== 'object' && !isFunction(props))) {
-        props = { children }
-    } else {
-        props.children = children.length > 0 ? children : props.children
+function getChildren(children, child) {
+    if (typeof child === 'string') {
+        children.push(child)
+    } else if (child instanceof Node) {
+        if (child.nodeType !== 11) {
+            children.push(child)
+        } else {
+            for (let el = child.firstChild; el !== null; el = el.nextSibling) {
+                children.push(el)
+            }
+        }
+    } else if (isFunction(child)) {
+        children.push(child)
+    } else if (Array.isArray(child)) {
+        child.reduce(getChildren, children)
+    } else if (child != null && child !== true && child !== false) {
+        children.push(String(child))
     }
+    return children
+}
+
+export function h(element, props, ...childs) {
+    props = { ...props }
+    props.children = getChildren([], props.children)
+    childs.reduce(getChildren, props.children)
+    if (props.children.length === 0) delete props.children
     if (isFunction(element)) {
         element = element(props)
     } else if (typeof element === 'string') {
