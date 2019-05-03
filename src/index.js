@@ -233,13 +233,24 @@ export function fragment(...nodes) {
     return frag
 }
 
+function clone(el) {
+    if (el instanceof Node) {
+        // TODO: clone events as this method does not clone onclick etc.
+        return el.cloneNode()
+    }
+
+    return el
+}
+
 export function Fragment(props) {
     if (isFunction(props.map)) {
-        const createElement = props.children && props.children[0]
-        if (!isFunction(createElement)) throw new Error('children must be function when using Fragment map')
+        if (!Array.isArray(props.children)) return fragment()
+        if (!props.children.some(isFunction)) throw new Error('children must contain a function when using Fragment map')
         return memoMap(
             isFunction(props.if) ? (() => (props.if() ? props.map() : [])) : props.map,
-            createElement
+            props.children.length === 1
+                ? props.children
+                : data => props.children.map(el => (isFunction(el) ? el(data) : clone(el)))
         )
     } else if (isFunction(props.if)) {
         return () => (props.if() ? props.children : null)
