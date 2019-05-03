@@ -233,7 +233,19 @@ export function fragment(...nodes) {
 }
 
 export function Fragment(props) {
-    return fragment(...props.children)
+    if (isFunction(props.map)) {
+        if (!isFunction(props.children)) throw new Error('children must be function when using Fragment map')
+        return fragment(
+            memoMap(
+                isFunction(props.if) ? (() => props.if() ? props.map() : []) : props.map,
+                props.children
+            )
+        )
+    } else if (isFunction(props.if)) {
+        return fragment(() => props.if() ? props.children : null)
+    } else {
+        return fragment(props.children)
+    }
 }
 
 // takes a fragment or nodes, mounts them for automatic render, returns a fragment with unmount method
