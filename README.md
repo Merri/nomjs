@@ -1,6 +1,7 @@
 <img alt="NomJS" src="http://merri.net/github-nomjs_720x225.png" height="225" width="720" />
 
-[![Version](http://img.shields.io/npm/v/@merri/nomjs.svg)](https://www.npmjs.com/package/@merri/nomjs)
+[![Version](https://img.shields.io/npm/v/@merri/nomjs.svg)](https://www.npmjs.com/package/@merri/nomjs)
+[![gzip size](https://img.badgesize.io/https://unpkg.com/@merri/nomjs@latest/lib/umd/nom.js?compression=gzip)](https://unpkg.com/@merri/nomjs@latest/lib/umd/nom.js)
 [![Build Status](https://travis-ci.org/Merri/nomjs.svg)](https://travis-ci.org/Merri/nomjs)
 
 Nom.js is a DOM library that works with JSX syntax (not compatible with React components).
