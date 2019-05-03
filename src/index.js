@@ -249,7 +249,7 @@ export function Fragment(props) {
         return memoMap(
             isFunction(props.if) ? (() => (props.if() ? props.map() : [])) : props.map,
             props.children.length === 1
-                ? props.children
+                ? props.children[0]
                 : data => props.children.map(el => (isFunction(el) ? el(data) : clone(el)))
         )
     } else if (isFunction(props.if)) {
