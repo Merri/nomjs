@@ -242,7 +242,7 @@ export function Fragment(props) {
             )
         )
     } else if (isFunction(props.if)) {
-        return fragment(() => props.if() ? props.children : null)
+        return fragment(() => (props.if() ? props.children : null))
     } else {
         return fragment(props.children)
     }
