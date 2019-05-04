@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-alpha.16] - 2019-05-04
+
+### Fixed
+
+- `Fragment`'s' `map` now equalizes objects deeply instead of shallowly
+
+### Changed
+
+- `memoMap` is no longer exposed
+
+
 ## [1.0.0-alpha.15] - 2019-05-03
 
 ### Fixed

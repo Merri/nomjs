@@ -1,3 +1,4 @@
+import { equal } from './equal'
 import htmlToDom from './htmlToDom.json'
 
 // typeof is fastest way to check if a function but older IEs don't support it for that and Chrome had a bug
@@ -302,13 +303,22 @@ export function mount(frag) {
     return frag
 }
 
-export function memoMap(result, create) {
+function memoMap(result, create) {
     const cache = new Map()
     return () => {
         const results = result()
-        const items = !Array.isArray(results) ? [results] : results
+        const cacheKeys = Array.from(cache.keys())
+        const cacheObjects = cacheKeys.filter(key => key && typeof key === 'object')
+        const items = (!Array.isArray(results) ? [results] : results).map(item => {
+            if (cache.has(item)) {
+                return item
+            } else if (item && typeof item === 'object') {
+                return cacheObjects.find(obj => equal(item, obj)) || item
+            }
+            return item
+        })
         const indexCache = new Map()
-        Array.from(cache.keys()).forEach(key => {
+        cacheKeys.forEach(key => {
             if (!items.includes(key)) {
                 cache.delete(key)
             }
