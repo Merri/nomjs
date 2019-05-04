@@ -311,7 +311,7 @@ function memoMap(result, create) {
         const results = result()
         let changed = false
         const resultsAsArray = (!Array.isArray(results) ? [results] : results)
-        const items = cacheObjects.length === 0 ? items : items.map(item =>
+        const items = cacheObjects.length === 0 ? resultsAsArray : resultsAsArray.map(item =>
             (item && typeof item === 'object' && !cache.has(item) && cacheObjects.find(obj => equal(item, obj))) || item
         )
         const indexCache = new Map()
