@@ -305,22 +305,20 @@ export function mount(frag) {
 
 function memoMap(result, create) {
     const cache = new Map()
+    let cacheKeys = []
+    let cacheObjects = []
     return () => {
         const results = result()
-        const cacheKeys = Array.from(cache.keys())
-        const cacheObjects = cacheKeys.filter(key => key && typeof key === 'object')
-        const items = (!Array.isArray(results) ? [results] : results).map(item => {
-            if (cache.has(item)) {
-                return item
-            } else if (item && typeof item === 'object') {
-                return cacheObjects.find(obj => equal(item, obj)) || item
-            }
-            return item
-        })
+        let changed = false
+        const resultsAsArray = (!Array.isArray(results) ? [results] : results)
+        const items = cacheObjects.length === 0 ? items : items.map(item =>
+            (item && typeof item === 'object' && !cache.has(item) && cacheObjects.find(obj => equal(item, obj))) || item
+        )
         const indexCache = new Map()
         cacheKeys.forEach(key => {
             if (!items.includes(key)) {
                 cache.delete(key)
+                changed = true
             }
         })
         const memo = items.reduce(
@@ -338,6 +336,7 @@ function memoMap(result, create) {
                 } else {
                     const node = create(item)
                     cache.set(item, [node])
+                    changed = true
                     memo.push(node)
                 }
                 indexCache.set(item, index + 1)
@@ -346,6 +345,10 @@ function memoMap(result, create) {
             []
         )
         indexCache.clear()
+        if (changed) {
+            cacheKeys = Array.from(cache.keys())
+            cacheObjects = cacheKeys.filter(key => key && typeof key === 'object')
+        }
         return memo
     }
 }
