@@ -275,17 +275,40 @@ export function mount(frag) {
         // gather additional reference of Nom rendered element
         if (isFunction(node.render)) mountedNodes.push(node)
     }
+    let frame, interval
+    Object.defineProperty(frag, 'mount', {
+        value: function() {
+            interval = setInterval(function() {
+                if (frame) {
+                    return
+                } else if (mountedNodes.length) {
+                    frame = requestAnimationFrame(render)
+                } else {
+                    clearInterval(interval)
+                    interval = null
+                }
+            }, 33)
+            return frag
+        }
+    })
     // ends rendering and removes all original children from the document and returns the fragment
-    frag.unmount = function() {
-        // stop render execution by clearing all active mounts
-        mountedNodes.length = 0
-        // restore all nodes back to the original fragment
-        while (originalNodes.length) frag.appendChild(originalNodes.shift())
-        // return the fragment
-        return frag
-    }
+    Object.defineProperty(frag, 'unmount', {
+        value: function() {
+            cancelAnimationFrame(frame)
+            frame = null
+            clearInterval(interval)
+            interval = null
+            // stop render execution by clearing all active mounts
+            mountedNodes.length = 0
+            // restore all nodes back to the original fragment
+            while (originalNodes.length) frag.appendChild(originalNodes.shift())
+            // return the fragment
+            return frag
+        }
+    })
     // takes care of keeping the nodes up-to-date
     function render() {
+        frame = null
         let index = mountedNodes.length
 
         while (index) {
@@ -295,12 +318,8 @@ export function mount(frag) {
             // are we responsible for the render?
             else if (!isFunction(node.parentElement.render)) node.render()
         }
-        // keep rendering as long as there is something we can be responsible of
-        if (mountedNodes.length) requestAnimationFrame(render)
     }
-    // initial render call
-    requestAnimationFrame(render)
-    return frag
+    return frag.mount()
 }
 
 function memoMap(result, create) {
